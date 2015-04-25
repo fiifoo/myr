@@ -1,0 +1,4 @@
+[package]
+name = "myr"
+version = "0.0.1"
+authors = ["Taavi Lappalainen <taavi.lappalainen@gmail.com>"]
