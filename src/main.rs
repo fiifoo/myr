@@ -5,11 +5,15 @@ use myr::area;
 fn main() {
     let mut area = area::create();
 
-    area.foo();
+    area.tick();
+    area.tick();
+    area.tick();
+    area.tick();
+    area.tick();
 
     /*
     loop {
-        area.foo();
+        area.tick();
     }
     */
 }

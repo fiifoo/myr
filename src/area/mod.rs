@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 pub struct Area {
     manager: EntityManager,
+    tick: i32
 }
 
 struct EntityManager {
@@ -14,10 +15,11 @@ struct Entity {
     name: String,
     id: usize,
     tile: (i32, i32),
+    tick: i32
 }
 
 struct Action {
-    entity: usize,
+    entity_id: usize,
     resolve: Box<Fn (&mut Entity)>,
 }
 
@@ -51,43 +53,68 @@ impl EntityManager {
 
 impl Area {
 
-    pub fn foo(&mut self) {
+    pub fn tick(&mut self) {
 
-        let actions = self.turn();
+        let id = self.find_tick_entity_id();
 
-        self.mutate(actions);
-
-        dump_entity(&self.manager.get(1));
+        match id {
+            Option::Some(id) => self.tick_entity(id),
+            Option::None => self.tick += 1,
+        }
     }
 
-    fn turn(&self) -> Vec<Action> {
+    fn find_tick_entity_id(&self) -> Option<usize> {
+
+        for entity in &self.manager.entities {
+            if entity.tick == self.tick {
+                return Option::Some(entity.id);
+            }
+        }
+
+        Option::None
+    }
+
+    fn tick_entity(&mut self, id: usize) {
+
+        let action = self.decide_action(id);
+        self.mutate(action);
+
+        dump_entity(&self.manager.get(id));
+    }
+
+    fn decide_action(&self, entity_id: usize) -> Action {
 
         let resolve = Box::new(|entity: &mut Entity| {
-            entity.tile = (10,10);
+            entity.tile = (entity.tile.0 + 1, entity.tile.1 + 1);
         });
 
-        let action = Action {entity: 1, resolve: resolve};
+        let action = Action {entity_id: entity_id, resolve: resolve};
 
-        vec!(action)
+        action
     }
 
-    fn mutate(&mut self, actions: Vec<Action>) {
-        let action = &actions[0];
+    fn mutate(&mut self, action: Action) {
 
-        let entity = self.manager.get_mut(action.entity);
+        let entity = self.manager.get_mut(action.entity_id);
         let resolve = &action.resolve;
 
         resolve(entity);
-        //entity.tile = (12,13);
+        entity.tick += 1;
     }
 }
 
 pub fn create () -> Area {
 
-    let mut area = Area {manager: EntityManager {map: HashMap::new(), entities: vec![], max_id: 0}};
-    let id = area.manager.generate_id();
+    let manager = EntityManager {map: HashMap::new(), entities: vec![], max_id: 0};
+    let mut area = Area {manager: manager, tick: 0};
 
-    area.manager.add(Entity {name: "Entity 1".to_string(), tile: (1,2), id: id});
+    let entity_id = area.manager.generate_id();
+    let entity = Entity {name: "Entity 1".to_string(), tile: (0,0), id: entity_id, tick: 0};
+    area.manager.add(entity);
+
+    let other_entity_id = area.manager.generate_id();
+    let other_entity = Entity {name: "Entity 2".to_string(), tile: (10,10), id: other_entity_id, tick: 0};
+    area.manager.add(other_entity);
 
     area
 }
