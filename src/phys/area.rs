@@ -1,4 +1,6 @@
 use phys::action::Action;
+use phys::action::Move;
+use phys::action::Target;
 use phys::entity::EntityManager;
 use phys::entity::Entity;
 
@@ -51,24 +53,18 @@ impl Area {
         dump_entity(&self.manager.get(id));
     }
 
-    fn decide_action(&self, entity_id: usize) -> Action {
+    fn decide_action(&self, entity_id: usize) -> Box<Action> {
 
-        let resolve = Box::new(|entity: &mut Entity| {
-            entity.tile = (entity.tile.0 + 1, entity.tile.1 + 1);
-        });
+        let entity = self.manager.get(entity_id);
 
-        let action = Action {entity_id: entity_id, resolve: resolve};
+        let target = Target::Tile(entity.tile.0 + 1, entity.tile.1 + 1);
+        let action = Move {entity_id: entity.id, target: target};
 
-        action
+        Box::new(action)
     }
 
-    fn mutate(&mut self, action: Action) {
-
-        let entity = self.manager.get_mut(action.entity_id);
-        let resolve = &action.resolve;
-
-        resolve(entity);
-        entity.tick += 1;
+    fn mutate(&mut self, action: Box<Action>) {
+        action.resolve(&mut self.manager);
     }
 }
 
