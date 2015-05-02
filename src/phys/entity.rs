@@ -1,10 +1,20 @@
 use std::collections::HashMap;
+use phys::area::Tile;
 
 pub struct EntityManager {
     map: HashMap<usize, usize>,
     entities: Vec<Entity>,
     max_id: usize,
 }
+
+pub struct Entity {
+    pub name: String,
+    pub id: EntityId,
+    pub tile: Tile,
+    pub tick: i32
+}
+
+pub struct EntityId(usize);
 
 impl EntityManager {
 
@@ -13,21 +23,24 @@ impl EntityManager {
     }
 
     pub fn add(&mut self, entity: Entity) -> &mut EntityManager {
+        let EntityId(id_value) = entity.id;
         let index = self.entities.len();
 
-        self.map.insert(entity.id, index);
+        self.map.insert(id_value, index);
         self.entities.push(entity);
 
         self
     }
 
-    pub fn get(&self, id: usize) -> &Entity {
-        let index = self.map.get(&id).unwrap();
+    pub fn get(&self, id: EntityId) -> &Entity {
+        let EntityId(id_value) = id;
+        let index = self.map.get(&id_value).unwrap();
         &self.entities.get(*index).unwrap()
     }
 
-    pub fn get_mut(&mut self, id: usize) -> &mut Entity {
-        let index = self.map.get(&id).unwrap();
+    pub fn get_mut(&mut self, id: EntityId) -> &mut Entity {
+        let EntityId(id_value) = id;
+        let index = self.map.get(&id_value).unwrap();
         self.entities.get_mut(*index).unwrap()
     }
 
@@ -35,29 +48,29 @@ impl EntityManager {
         &self.entities
     }
 
-    fn generate_id(&mut self) -> usize {
+    fn generate_id(&mut self) -> EntityId {
         self.max_id += 1;
 
-        self.max_id
+        EntityId(self.max_id)
     }
-}
-
-pub struct Entity {
-    pub name: String,
-    pub id: usize,
-    pub tile: (i32, i32),
-    pub tick: i32
 }
 
 impl Entity {
 
-    pub fn new (manager: &mut EntityManager, name: String, tile: (i32, i32)) -> usize {
+    pub fn new (manager: &mut EntityManager, name: String, tile: Tile) -> EntityId {
 
         let id = manager.generate_id();
-        let entity = Entity {name: name, tile: tile, id: id, tick: 0};
+        let entity = Entity {name: name, tile: tile, id: id.clone(), tick: 0};
 
         manager.add(entity);
 
         id
+    }
+}
+
+impl Clone for EntityId {
+    fn clone (&self) -> Self {
+        let EntityId(value) = *self;
+        EntityId(value)
     }
 }

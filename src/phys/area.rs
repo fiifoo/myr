@@ -1,13 +1,16 @@
 use phys::action::Action;
 use phys::action::Move;
 use phys::action::Target;
-use phys::entity::EntityManager;
 use phys::entity::Entity;
+use phys::entity::EntityId;
+use phys::entity::EntityManager;
 
 pub struct Area {
     manager: EntityManager,
     tick: i32
 }
+
+pub struct Tile(pub i32, pub i32);
 
 impl Area {
 
@@ -15,9 +18,9 @@ impl Area {
 
         let mut manager = EntityManager::new();
 
-        Entity::new(&mut manager, "Entity 1".to_string(), (0,0));
-        Entity::new(&mut manager, "Entity 2".to_string(), (10,10));
-        Entity::new(&mut manager, "Entity 3".to_string(), (100,100));
+        Entity::new(&mut manager, "Entity 1".to_string(), Tile(0,0));
+        Entity::new(&mut manager, "Entity 2".to_string(), Tile(10,10));
+        Entity::new(&mut manager, "Entity 3".to_string(), Tile(100,100));
 
         let area = Area {manager: manager, tick: 0};
 
@@ -26,7 +29,7 @@ impl Area {
 
     pub fn tick(&mut self) {
 
-        let id = self.find_tick_entity_id();
+        let id = self.find_tick_entity();
 
         match id {
             Option::Some(id) => self.tick_entity(id),
@@ -34,31 +37,35 @@ impl Area {
         }
     }
 
-    fn find_tick_entity_id(&self) -> Option<usize> {
+    fn find_tick_entity(&self) -> Option<EntityId> {
 
         for entity in self.manager.get_all() {
             if entity.tick == self.tick {
-                return Option::Some(entity.id);
+                return Option::Some(entity.id.clone());
             }
         }
 
         Option::None
     }
 
-    fn tick_entity(&mut self, id: usize) {
+    fn tick_entity(&mut self, id: EntityId) {
+
+        let dump_id = id.clone();
 
         let action = self.decide_action(id);
         self.mutate(action);
 
-        dump_entity(&self.manager.get(id));
+        dump_entity(&self.manager.get(dump_id));
     }
 
-    fn decide_action(&self, entity_id: usize) -> Box<Action> {
+    fn decide_action(&self, id: EntityId) -> Box<Action> {
 
-        let entity = self.manager.get(entity_id);
+        let entity = self.manager.get(id);
 
-        let target = Target::Tile(entity.tile.0 + 1, entity.tile.1 + 1);
-        let action = Move {entity_id: entity.id, target: target};
+        let Tile(x, y) = entity.tile;
+
+        let target = Target::Tile(Tile(x + 1, y + 1));
+        let action = Move {entity: entity.id.clone(), target: target};
 
         Box::new(action)
     }
@@ -68,7 +75,14 @@ impl Area {
     }
 }
 
+impl Clone for Tile {
+    fn clone (&self) -> Self {
+        let Tile(x, y) = *self;
+        Tile(x, y)
+    }
+}
+
 fn dump_entity(entity: &Entity) {
-    let (x,y) = entity.tile;
+    let Tile(x,y) = entity.tile;
     println!("{}, {}, {}", entity.name, x, y);
 }

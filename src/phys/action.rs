@@ -1,3 +1,5 @@
+use phys::area::Tile;
+use phys::entity::EntityId;
 use phys::entity::EntityManager;
 
 pub trait Action {
@@ -5,17 +7,17 @@ pub trait Action {
 }
 
 pub struct Move {
-    pub entity_id: usize,
+    pub entity: EntityId,
     pub target: Target,
 }
 
 impl Action for Move {
     fn resolve(&self, manager: &mut EntityManager) {
 
-            let entity = manager.get_mut(self.entity_id);
+            let entity = manager.get_mut(self.entity.clone());
 
             match self.target {
-                Target::Tile(x, y) => entity.tile = (x, y),
+                Target::Tile(ref tile) => entity.tile = tile.clone(),
                 _ => (),
             }
 
@@ -24,7 +26,7 @@ impl Action for Move {
 }
 
 pub enum Target {
-    Entity(usize),
-    Tile(i32, i32),
+    Entity(EntityId),
+    Tile(Tile),
     None,
 }
