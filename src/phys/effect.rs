@@ -21,8 +21,18 @@ pub struct MoveResolver {
     pub tile: Tile,
 }
 
+pub struct DamageResolver {
+    pub damage: i32,
+}
+
 impl EffectResolver for MoveResolver {
     fn resolve(&self, entity: &mut Entity) {
         entity.tile = self.tile.clone();
+    }
+}
+
+impl EffectResolver for DamageResolver {
+    fn resolve(&self, entity: &mut Entity) {
+        entity.damage += self.damage;
     }
 }

@@ -11,7 +11,8 @@ pub struct Entity {
     pub name: String,
     pub id: EntityId,
     pub tile: Tile,
-    pub tick: i32
+    pub tick: i32,
+    pub damage: i32
 }
 
 pub struct EntityId(usize);
@@ -60,7 +61,7 @@ impl Entity {
     pub fn new (manager: &mut EntityManager, name: String, tile: Tile) -> EntityId {
 
         let id = manager.generate_id();
-        let entity = Entity {name: name, tile: tile, id: id.clone(), tick: 0};
+        let entity = Entity {name: name, tile: tile, id: id.clone(), tick: 0, damage: 0};
 
         manager.add(entity);
 

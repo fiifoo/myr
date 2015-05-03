@@ -65,12 +65,30 @@ impl Area {
 
     fn decide_action(&self, id: EntityId) -> Action {
 
+        //self.get_move_action(id)
+        self.get_attack_action(id)
+    }
+
+    fn get_move_action(&self, id: EntityId) -> Action {
+
         let entity = self.manager.get(id);
 
         let Tile(x, y) = entity.tile;
+        let tile = Tile(x + 1, y + 1);
 
-        let target = action::Target::Tile(Tile(x + 1, y + 1));
-        let resolver = Box::new(action::MoveResolver {target: target});
+        let resolver = Box::new(action::MoveResolver {tile: tile});
+        let action = Action {entity: entity.id.clone(), resolver: resolver};
+
+        action
+    }
+
+    fn get_attack_action(&self, id: EntityId) -> Action {
+
+        let entity = self.manager.get(id);
+
+        let target = action::Target::Entity(entity.id.clone()); // suicidal
+
+        let resolver = Box::new(action::AttackResolver {target: target});
         let action = Action {entity: entity.id.clone(), resolver: resolver};
 
         action
@@ -86,5 +104,5 @@ impl Clone for Tile {
 
 fn dump_entity(entity: &Entity) {
     let Tile(x,y) = entity.tile;
-    println!("{}, {}, {}", entity.name, x, y);
+    println!("{}, {}, {}, {}", entity.name, x, y, entity.damage);
 }

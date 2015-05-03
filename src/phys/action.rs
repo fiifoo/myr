@@ -22,19 +22,33 @@ pub trait ActionResolver {
 }
 
 pub struct MoveResolver {
+    pub tile: Tile,
+}
+
+pub struct AttackResolver {
     pub target: Target,
 }
 
 impl ActionResolver for MoveResolver {
     fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
 
-        let tile = match self.target {
-            Target::Tile(ref tile) => tile.clone(),
-            _ => panic!("Tile required as target."),
+        let resolver = Box::new(effect::MoveResolver {tile: self.tile.clone()});
+        let effect = Effect {entity: entity.id.clone(), resolver: resolver};
+
+        vec![effect]
+    }
+}
+
+impl ActionResolver for AttackResolver {
+    fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
+
+        let target_entity = match self.target {
+            Target::Entity(ref entity) => entity.clone(),
+            _ => panic!("Only entity supported as target for now."),
         };
 
-        let resolver = Box::new(effect::MoveResolver {tile: tile});
-        let effect = Effect {entity: entity.id.clone(), resolver: resolver};
+        let resolver = Box::new(effect::DamageResolver {damage: 2});
+        let effect = Effect {entity: target_entity, resolver: resolver};
 
         vec![effect]
     }
