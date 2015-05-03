@@ -49,12 +49,18 @@ impl Area {
 
     fn tick_entity(&mut self, id: EntityId) {
 
-        let dump_id = id.clone();
+        let action = self.decide_action(id.clone());
+        let effects = action.resolve(&self.manager);
 
-        let action = self.decide_action(id);
-        self.mutate(action);
+        for effect in effects {
+            let effect_entity = self.manager.get_mut(effect.entity.clone());
+            effect.resolve(effect_entity);
+        }
 
-        dump_entity(&self.manager.get(dump_id));
+        let entity = self.manager.get_mut(action.entity.clone());
+        entity.tick += 1;
+
+        dump_entity(entity);
     }
 
     fn decide_action(&self, id: EntityId) -> Action {
@@ -68,17 +74,6 @@ impl Area {
         let action = Action {entity: entity.id.clone(), resolver: resolver};
 
         action
-    }
-
-
-    fn mutate(&mut self, action: Action) {
-
-        let effects = action.resolve(&self.manager);
-
-        for effect in effects {
-            let entity = self.manager.get_mut(effect.entity.clone());
-            effect.resolve(entity);
-        }
     }
 }
 
