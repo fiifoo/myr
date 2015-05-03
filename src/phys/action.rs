@@ -1,9 +1,11 @@
 use phys::area::Tile;
+use phys::effect;
+use phys::effect::Effect;
 use phys::entity::EntityId;
 use phys::entity::EntityManager;
 
 pub trait Action {
-    fn resolve(&self, &mut EntityManager);
+    fn resolve(&self, &EntityManager) -> Vec<Box<Effect>>;
 }
 
 pub struct Move {
@@ -12,16 +14,15 @@ pub struct Move {
 }
 
 impl Action for Move {
-    fn resolve(&self, manager: &mut EntityManager) {
+    fn resolve(&self, manager: &EntityManager) -> Vec<Box<Effect>> {
 
-            let entity = manager.get_mut(self.entity.clone());
+        let tile = match self.target {
+            Target::Tile(ref tile) => tile.clone(),
+            _ => panic!("Tile required as target."),
+        };
 
-            match self.target {
-                Target::Tile(ref tile) => entity.tile = tile.clone(),
-                _ => (),
-            }
-
-            entity.tick += 1;
+        let effect = effect::Move {entity: self.entity.clone(), tile: tile};
+        vec![Box::new(effect)]
     }
 }
 

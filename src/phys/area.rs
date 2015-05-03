@@ -1,6 +1,6 @@
+use phys::action;
 use phys::action::Action;
-use phys::action::Move;
-use phys::action::Target;
+use phys::effect::Effect;
 use phys::entity::Entity;
 use phys::entity::EntityId;
 use phys::entity::EntityManager;
@@ -64,14 +64,18 @@ impl Area {
 
         let Tile(x, y) = entity.tile;
 
-        let target = Target::Tile(Tile(x + 1, y + 1));
-        let action = Move {entity: entity.id.clone(), target: target};
+        let target = action::Target::Tile(Tile(x + 1, y + 1));
+        let action = action::Move {entity: entity.id.clone(), target: target};
 
         Box::new(action)
     }
 
     fn mutate(&mut self, action: Box<Action>) {
-        action.resolve(&mut self.manager);
+        let effects = action.resolve(&self.manager);
+
+        for effect in effects {
+            effect.resolve(&mut self.manager);
+        }
     }
 }
 
