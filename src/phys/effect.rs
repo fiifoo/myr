@@ -1,19 +1,28 @@
 use phys::area::Tile;
+use phys::entity::Entity;
 use phys::entity::EntityId;
-use phys::entity::EntityManager;
 
-pub trait Effect {
-    fn resolve(&self, &mut EntityManager);
+pub struct Effect {
+    pub entity: EntityId,
+    pub resolver: Box<EffectResolver>,
 }
 
-pub struct Move {
-    pub entity: EntityId,
+impl Effect {
+    pub fn resolve(&self, entity: &mut Entity) {
+        self.resolver.resolve(entity);
+    }
+}
+
+pub trait EffectResolver {
+    fn resolve(&self, &mut Entity);
+}
+
+pub struct MoveResolver {
     pub tile: Tile,
 }
 
-impl Effect for Move {
-    fn resolve(&self, manager: &mut EntityManager) {
-        let entity = manager.get_mut(self.entity.clone());
+impl EffectResolver for MoveResolver {
+    fn resolve(&self, entity: &mut Entity) {
         entity.tile = self.tile.clone();
     }
 }

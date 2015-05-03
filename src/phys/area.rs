@@ -1,6 +1,5 @@
 use phys::action;
 use phys::action::Action;
-use phys::effect::Effect;
 use phys::entity::Entity;
 use phys::entity::EntityId;
 use phys::entity::EntityManager;
@@ -58,23 +57,27 @@ impl Area {
         dump_entity(&self.manager.get(dump_id));
     }
 
-    fn decide_action(&self, id: EntityId) -> Box<Action> {
+    fn decide_action(&self, id: EntityId) -> Action {
 
         let entity = self.manager.get(id);
 
         let Tile(x, y) = entity.tile;
 
         let target = action::Target::Tile(Tile(x + 1, y + 1));
-        let action = action::Move {entity: entity.id.clone(), target: target};
+        let resolver = Box::new(action::MoveResolver {target: target});
+        let action = Action {entity: entity.id.clone(), resolver: resolver};
 
-        Box::new(action)
+        action
     }
 
-    fn mutate(&mut self, action: Box<Action>) {
+
+    fn mutate(&mut self, action: Action) {
+
         let effects = action.resolve(&self.manager);
 
         for effect in effects {
-            effect.resolve(&mut self.manager);
+            let entity = self.manager.get_mut(effect.entity.clone());
+            effect.resolve(entity);
         }
     }
 }

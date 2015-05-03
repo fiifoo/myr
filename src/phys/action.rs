@@ -1,28 +1,42 @@
 use phys::area::Tile;
 use phys::effect;
 use phys::effect::Effect;
+use phys::entity::Entity;
 use phys::entity::EntityId;
 use phys::entity::EntityManager;
 
-pub trait Action {
-    fn resolve(&self, &EntityManager) -> Vec<Box<Effect>>;
+pub struct Action {
+    pub entity: EntityId,
+    pub resolver: Box<ActionResolver>,
 }
 
-pub struct Move {
-    pub entity: EntityId,
+impl Action {
+    pub fn resolve(&self, manager: &EntityManager) -> Vec<Effect> {
+        let entity = manager.get(self.entity.clone());
+        self.resolver.resolve(entity, manager)
+    }
+}
+
+pub trait ActionResolver {
+    fn resolve(&self, &Entity, &EntityManager) -> Vec<Effect>;
+}
+
+pub struct MoveResolver {
     pub target: Target,
 }
 
-impl Action for Move {
-    fn resolve(&self, manager: &EntityManager) -> Vec<Box<Effect>> {
+impl ActionResolver for MoveResolver {
+    fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
 
         let tile = match self.target {
             Target::Tile(ref tile) => tile.clone(),
             _ => panic!("Tile required as target."),
         };
 
-        let effect = effect::Move {entity: self.entity.clone(), tile: tile};
-        vec![Box::new(effect)]
+        let resolver = Box::new(effect::MoveResolver {tile: tile});
+        let effect = Effect {entity: entity.id.clone(), resolver: resolver};
+
+        vec![effect]
     }
 }
 
