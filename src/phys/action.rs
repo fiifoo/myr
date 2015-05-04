@@ -10,35 +10,30 @@ pub struct Action {
     pub resolver: Box<ActionResolver>,
 }
 
-impl Action {
-    pub fn resolve(&self, manager: &EntityManager) -> Vec<Effect> {
-        let entity = manager.get(self.entity_id.clone());
-        self.resolver.resolve(entity, manager)
-    }
-}
-
 pub trait ActionResolver {
     fn resolve(&self, &Entity, &EntityManager) -> Vec<Effect>;
-}
-
-pub struct MoveResolver {
-    pub tile: Tile,
 }
 
 pub struct AttackResolver {
     pub target: Target,
 }
 
+pub struct MoveResolver {
+    pub tile: Tile,
+}
+
 pub struct NukeEmResolver;
 
-impl ActionResolver for MoveResolver {
-    #[allow(unused_variables)]
-    fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
+pub enum Target {
+    Entity(EntityId),
+    Tile(Tile),
+    None,
+}
 
-        let resolver = Box::new(effect::MovementResolver {tile: self.tile.clone()});
-        let effect = Effect {entity_id: entity.id.clone(), resolver: resolver};
-
-        vec![effect]
+impl Action {
+    pub fn resolve(&self, manager: &EntityManager) -> Vec<Effect> {
+        let entity = manager.get(self.entity_id.clone());
+        self.resolver.resolve(entity, manager)
     }
 }
 
@@ -53,6 +48,17 @@ impl ActionResolver for AttackResolver {
 
         let resolver = Box::new(effect::DamageResolver {damage: 1});
         let effect = Effect {entity_id: target_id, resolver: resolver};
+
+        vec![effect]
+    }
+}
+
+impl ActionResolver for MoveResolver {
+    #[allow(unused_variables)]
+    fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
+
+        let resolver = Box::new(effect::MovementResolver {tile: self.tile.clone()});
+        let effect = Effect {entity_id: entity.id.clone(), resolver: resolver};
 
         vec![effect]
     }
@@ -77,10 +83,4 @@ impl ActionResolver for NukeEmResolver {
 
         effects
     }
-}
-
-pub enum Target {
-    Entity(EntityId),
-    Tile(Tile),
-    None,
 }

@@ -7,37 +7,37 @@ pub struct Effect {
     pub resolver: Box<EffectResolver>,
 }
 
-impl Effect {
-    pub fn resolve(&self, entity: &mut Entity) {
-        self.resolver.resolve(entity);
-    }
-}
-
 pub trait EffectResolver {
     fn resolve(&self, &mut Entity);
-}
-
-pub struct MovementResolver {
-    pub tile: Tile,
 }
 
 pub struct DamageResolver {
     pub damage: i32,
 }
 
+pub struct MovementResolver {
+    pub tile: Tile,
+}
+
 pub struct RadiationResolver {
     pub radiation: i32,
 }
 
-impl EffectResolver for MovementResolver {
-    fn resolve(&self, entity: &mut Entity) {
-        entity.tile = self.tile.clone();
+impl Effect {
+    pub fn resolve(&self, entity: &mut Entity) {
+        self.resolver.resolve(entity);
     }
 }
 
 impl EffectResolver for DamageResolver {
     fn resolve(&self, entity: &mut Entity) {
         entity.damage += self.damage;
+    }
+}
+
+impl EffectResolver for MovementResolver {
+    fn resolve(&self, entity: &mut Entity) {
+        entity.tile = self.tile.clone();
     }
 }
 

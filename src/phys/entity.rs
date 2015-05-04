@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use phys::area::Tile;
 
 pub struct EntityManager {
-    map: HashMap<usize, usize>,
     entities: Vec<Entity>,
+    map: HashMap<usize, usize>,
     max_id: usize,
 }
 
@@ -11,9 +11,9 @@ pub struct Entity {
     pub name: String,
     pub id: EntityId,
     pub tile: Tile,
-    pub tick: i32,
     pub damage: i32,
-    pub radiation: i32
+    pub radiation: i32,
+    pub tick: i32
 }
 
 pub struct EntityId(usize);
