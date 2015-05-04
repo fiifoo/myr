@@ -60,13 +60,14 @@ impl Area {
         let entity = self.manager.get_mut(action.entity.clone());
         entity.tick += 1;
 
-        dump_entity(entity);
+        entity.dump();
     }
 
     fn decide_action(&self, id: EntityId) -> Action {
 
         //self.get_move_action(id)
-        self.get_attack_action(id)
+        //self.get_attack_action(id)
+        self.get_nuke_em_action(id)
     }
 
     fn get_move_action(&self, id: EntityId) -> Action {
@@ -93,6 +94,16 @@ impl Area {
 
         action
     }
+
+    fn get_nuke_em_action(&self, id: EntityId) -> Action {
+
+        let entity = self.manager.get(id);
+
+        let resolver = Box::new(action::NukeEmResolver);
+        let action = Action {entity: entity.id.clone(), resolver: resolver};
+
+        action
+    }
 }
 
 impl Clone for Tile {
@@ -100,9 +111,4 @@ impl Clone for Tile {
         let Tile(x, y) = *self;
         Tile(x, y)
     }
-}
-
-fn dump_entity(entity: &Entity) {
-    let Tile(x,y) = entity.tile;
-    println!("{}, {}, {}, {}", entity.name, x, y, entity.damage);
 }

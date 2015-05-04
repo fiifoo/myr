@@ -12,7 +12,8 @@ pub struct Entity {
     pub id: EntityId,
     pub tile: Tile,
     pub tick: i32,
-    pub damage: i32
+    pub damage: i32,
+    pub radiation: i32
 }
 
 pub struct EntityId(usize);
@@ -61,11 +62,16 @@ impl Entity {
     pub fn new (manager: &mut EntityManager, name: String, tile: Tile) -> EntityId {
 
         let id = manager.generate_id();
-        let entity = Entity {name: name, tile: tile, id: id.clone(), tick: 0, damage: 0};
+        let entity = Entity {name: name, tile: tile, id: id.clone(), tick: 0, damage: 0, radiation: 0};
 
         manager.add(entity);
 
         id
+    }
+
+    pub fn dump(&self) {
+        let Tile(x,y) = self.tile;
+        println!("name = {}, tile = ({},{}), damage = {}, radiation = {}", self.name, x, y, self.damage, self.radiation);
     }
 }
 

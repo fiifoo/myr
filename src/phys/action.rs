@@ -29,6 +29,8 @@ pub struct AttackResolver {
     pub target: Target,
 }
 
+pub struct NukeEmResolver;
+
 impl ActionResolver for MoveResolver {
     fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
 
@@ -51,6 +53,26 @@ impl ActionResolver for AttackResolver {
         let effect = Effect {entity: target_entity, resolver: resolver};
 
         vec![effect]
+    }
+}
+
+impl ActionResolver for NukeEmResolver {
+    fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
+
+        let mut effects = vec![];
+
+        for entity in manager.get_all() {
+            let resolver = Box::new(effect::DamageResolver {damage: 999});
+            let effect = Effect {entity: entity.id.clone(), resolver: resolver};
+            effects.push(effect);
+        }
+        for entity in manager.get_all() {
+            let resolver = Box::new(effect::RadiationResolver {radiation: 999});
+            let effect = Effect {entity: entity.id.clone(), resolver: resolver};
+            effects.push(effect);
+        }
+
+        effects
     }
 }
 
