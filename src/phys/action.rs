@@ -32,6 +32,7 @@ pub struct AttackResolver {
 pub struct NukeEmResolver;
 
 impl ActionResolver for MoveResolver {
+    #[allow(unused_variables)]
     fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
 
         let resolver = Box::new(effect::MovementResolver {tile: self.tile.clone()});
@@ -42,6 +43,7 @@ impl ActionResolver for MoveResolver {
 }
 
 impl ActionResolver for AttackResolver {
+    #[allow(unused_variables)]
     fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
 
         let target_id = match self.target {
@@ -57,6 +59,7 @@ impl ActionResolver for AttackResolver {
 }
 
 impl ActionResolver for NukeEmResolver {
+    #[allow(unused_variables)]
     fn resolve(&self, entity: &Entity, manager: &EntityManager) -> Vec<Effect> {
 
         let mut effects = vec![];
