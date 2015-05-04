@@ -1,5 +1,4 @@
-use phys::action;
-use phys::action::Action;
+use ai;
 use phys::entity::Entity;
 use phys::entity::EntityId;
 use phys::entity::EntityManager;
@@ -49,7 +48,7 @@ impl Area {
 
     fn tick_entity(&mut self, id: EntityId) {
 
-        let action = self.decide_action(id.clone());
+        let action = ai::decide(self.manager.get(id));
         let effects = action.resolve(&self.manager);
 
         for effect in effects {
@@ -61,48 +60,6 @@ impl Area {
         entity.tick += 1;
 
         entity.dump();
-    }
-
-    fn decide_action(&self, id: EntityId) -> Action {
-
-        //self.get_move_action(id)
-        //self.get_attack_action(id)
-        self.get_nuke_em_action(id)
-    }
-
-    fn get_move_action(&self, id: EntityId) -> Action {
-
-        let entity = self.manager.get(id);
-
-        let Tile(x, y) = entity.tile;
-        let tile = Tile(x + 1, y + 1);
-
-        let resolver = Box::new(action::MoveResolver {tile: tile});
-        let action = Action {entity_id: entity.id.clone(), resolver: resolver};
-
-        action
-    }
-
-    fn get_attack_action(&self, id: EntityId) -> Action {
-
-        let entity = self.manager.get(id);
-
-        let target = action::Target::Entity(entity.id.clone()); // suicidal
-
-        let resolver = Box::new(action::AttackResolver {target: target});
-        let action = Action {entity_id: entity.id.clone(), resolver: resolver};
-
-        action
-    }
-
-    fn get_nuke_em_action(&self, id: EntityId) -> Action {
-
-        let entity = self.manager.get(id);
-
-        let resolver = Box::new(action::NukeEmResolver);
-        let action = Action {entity_id: entity.id.clone(), resolver: resolver};
-
-        action
     }
 }
 
