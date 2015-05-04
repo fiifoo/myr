@@ -3,7 +3,7 @@ use phys::entity::Entity;
 use phys::entity::EntityId;
 
 pub struct Effect {
-    pub entity: EntityId,
+    pub entity_id: EntityId,
     pub resolver: Box<EffectResolver>,
 }
 
@@ -17,7 +17,7 @@ pub trait EffectResolver {
     fn resolve(&self, &mut Entity);
 }
 
-pub struct MoveResolver {
+pub struct MovementResolver {
     pub tile: Tile,
 }
 
@@ -29,7 +29,7 @@ pub struct RadiationResolver {
     pub radiation: i32,
 }
 
-impl EffectResolver for MoveResolver {
+impl EffectResolver for MovementResolver {
     fn resolve(&self, entity: &mut Entity) {
         entity.tile = self.tile.clone();
     }

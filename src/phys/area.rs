@@ -53,11 +53,11 @@ impl Area {
         let effects = action.resolve(&self.manager);
 
         for effect in effects {
-            let effect_entity = self.manager.get_mut(effect.entity.clone());
+            let effect_entity = self.manager.get_mut(effect.entity_id.clone());
             effect.resolve(effect_entity);
         }
 
-        let entity = self.manager.get_mut(action.entity.clone());
+        let entity = self.manager.get_mut(action.entity_id.clone());
         entity.tick += 1;
 
         entity.dump();
@@ -78,7 +78,7 @@ impl Area {
         let tile = Tile(x + 1, y + 1);
 
         let resolver = Box::new(action::MoveResolver {tile: tile});
-        let action = Action {entity: entity.id.clone(), resolver: resolver};
+        let action = Action {entity_id: entity.id.clone(), resolver: resolver};
 
         action
     }
@@ -90,7 +90,7 @@ impl Area {
         let target = action::Target::Entity(entity.id.clone()); // suicidal
 
         let resolver = Box::new(action::AttackResolver {target: target});
-        let action = Action {entity: entity.id.clone(), resolver: resolver};
+        let action = Action {entity_id: entity.id.clone(), resolver: resolver};
 
         action
     }
@@ -100,7 +100,7 @@ impl Area {
         let entity = self.manager.get(id);
 
         let resolver = Box::new(action::NukeEmResolver);
-        let action = Action {entity: entity.id.clone(), resolver: resolver};
+        let action = Action {entity_id: entity.id.clone(), resolver: resolver};
 
         action
     }
