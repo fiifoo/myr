@@ -1,19 +1,7 @@
 extern crate myr;
 
-use myr::phys::area::Area;
+use myr::server;
 
 fn main() {
-    let mut area = Area::new();
-
-    area.tick();
-    area.tick();
-    area.tick();
-    area.tick();
-    area.tick();
-
-    /*
-    loop {
-        area.tick();
-    }
-    */
+    server::start();
 }
