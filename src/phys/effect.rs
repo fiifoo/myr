@@ -1,9 +1,8 @@
 use phys::area::Tile;
 use phys::entity::Entity;
-use phys::entity::EntityId;
 
 pub struct Effect {
-    pub entity_id: EntityId,
+    pub entity_id: i64,
     pub resolver: Box<EffectResolver>,
 }
 
@@ -12,7 +11,7 @@ pub trait EffectResolver {
 }
 
 pub struct DamageResolver {
-    pub damage: i32,
+    pub damage: i64,
 }
 
 pub struct MovementResolver {
@@ -20,7 +19,7 @@ pub struct MovementResolver {
 }
 
 pub struct RadiationResolver {
-    pub radiation: i32,
+    pub radiation: i64,
 }
 
 impl Effect {

@@ -13,11 +13,10 @@ pub fn decide(entity: &Entity) -> Action {
 #[allow(dead_code)]
 fn get_move_action(entity: &Entity) -> Action {
 
-    let Tile(x, y) = entity.tile;
-    let tile = Tile(x + 1, y + 1);
+    let tile = Tile {x: entity.tile.x + 1, y: entity.tile.y + 1};
 
     let resolver = Box::new(action::MoveResolver {tile: tile});
-    let action = Action {entity_id: entity.id.clone(), resolver: resolver};
+    let action = Action {entity_id: entity.id, resolver: resolver};
 
     action
 }
@@ -25,10 +24,10 @@ fn get_move_action(entity: &Entity) -> Action {
 #[allow(dead_code)]
 fn get_attack_action(entity: &Entity) -> Action {
 
-    let target = action::Target::Entity(entity.id.clone()); // suicidal
+    let target = action::Target::Entity(entity.id); // suicidal
 
     let resolver = Box::new(action::AttackResolver {target: target});
-    let action = Action {entity_id: entity.id.clone(), resolver: resolver};
+    let action = Action {entity_id: entity.id, resolver: resolver};
 
     action
 }
@@ -36,7 +35,7 @@ fn get_attack_action(entity: &Entity) -> Action {
 fn get_nuke_em_action(entity: &Entity) -> Action {
 
     let resolver = Box::new(action::NukeEmResolver);
-    let action = Action {entity_id: entity.id.clone(), resolver: resolver};
+    let action = Action {entity_id: entity.id, resolver: resolver};
 
     action
 }
