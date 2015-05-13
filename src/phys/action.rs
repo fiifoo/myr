@@ -1,3 +1,8 @@
+use rustc_serialize::json;
+use rustc_serialize::json::Json;
+use rustc_serialize::Decodable;
+use rustc_serialize::Decoder;
+
 use phys::area::Tile;
 use phys::effect;
 use phys::effect::Effect;
@@ -7,6 +12,34 @@ use phys::entity::EntityManager;
 pub struct Action {
     pub entity_id: i64,
     pub resolver: Box<ActionResolver>,
+}
+
+#[derive(RustcDecodable)]
+pub enum ActionType {
+    Attack,
+    Move,
+    NukeEm,
+}
+
+impl ActionType {
+    pub fn new_from_json(json: String) -> ActionType {
+
+        let json = Json::from_str(json.as_str()).unwrap();
+        let mut decoder = json::Decoder::new(json);
+
+        ActionType::decode(&mut decoder).unwrap()
+    }
+    pub fn new_resolver_from_json(&self, json: String) -> Box<ActionResolver> {
+
+        let json = Json::from_str(json.as_str()).unwrap();
+        let mut decoder = json::Decoder::new(json);
+
+        match *self {
+            ActionType::Attack => Box::new(AttackResolver::decode(&mut decoder).unwrap()),
+            ActionType::Move => Box::new(MoveResolver::decode(&mut decoder).unwrap()),
+            ActionType::NukeEm => Box::new(NukeEmResolver::decode(&mut decoder).unwrap()),
+        }
+    }
 }
 
 pub trait ActionResolver {

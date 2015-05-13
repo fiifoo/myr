@@ -1,4 +1,3 @@
-
 use std::collections::BTreeMap;
 use std::sync::mpsc;
 use std::thread;
@@ -10,6 +9,7 @@ use websocket::{Server, Message, Sender, Receiver, WebSocketStream};
 use websocket::server::{sender, receiver};
 
 use phys::area::Area;
+use user::User;
 
 pub fn start () {
 
@@ -38,55 +38,72 @@ pub fn start () {
 
 fn serve(mut sender: sender::Sender<WebSocketStream>, mut receiver: receiver::Receiver<WebSocketStream>) {
 
-    let (tx, rx) = mpsc::channel();
+    let mut response = BTreeMap::new();
+    response.insert("message".to_string(), "Welcome!".to_json());
+    let response = Json::Object(response);
+    let response = json::encode(&response).unwrap();
+    sender.send_message(Message::Text(response)).unwrap();
+
+    let (action_sender, action_receiver) = mpsc::channel();
 
     thread::spawn(move || {
         for message in receiver.incoming_messages::<Message>() {
 
             let message = message.unwrap();
 
-            let command = extract_command(message);
+            let action = extract_action(message);
 
-            if command.is_some() {
+            if action.is_some() {
 
-                let command = command.unwrap();
+                let action = action.unwrap();
 
-                println!("Received command: {}", command);
+                println!("Received action: {:?}", action);
 
-                let mut response = BTreeMap::new();
-                response.insert("received_command".to_string(), command.to_json());
-                let response = Json::Object(response);
-                let response = json::encode(&response).unwrap();
-                sender.send_message(Message::Text(response)).unwrap();
-
-                let tx = tx.clone();
-                tx.send(command).unwrap();
+                let action_sender = action_sender.clone();
+                action_sender.send(action).unwrap();
             }
 
         }
     });
 
-    let mut area = Area::new();
+    let user = User::new(action_receiver);
+    let mut area = Area::new(user);
 
     loop {
-        Option::Some(rx.recv().unwrap());
         area.tick();
     }
 }
 
-fn extract_command(message: Message) -> Option<i64> {
+fn extract_action(message: Message) -> Option<(String, String)> {
 
     match message {
-        Message::Text(string) => extract_json_command(string),
+        Message::Text(string) => extract_json_action(string),
         _ => Option::None,
     }
 }
 
-fn extract_json_command(string: String) -> Option<i64> {
+fn extract_json_action(string: String) -> Option<(String, String)> {
 
-    let json = Json::from_str(string.as_str()).unwrap();
+    let json = Json::from_str(string.as_str());
+    if json.is_err() {
+        return Option::None;
+    }
+    let json = json.unwrap();
     let json = json.as_object().unwrap();
-    let command = json.get("command").unwrap();
 
-    Option::Some(command.as_i64().unwrap())
+    let action = json.get("action");
+    if action.is_none() {
+        return Option::None;
+    }
+
+    let action = action.unwrap();
+
+    let action_type = action.find("type");
+    let resolver = action.find("resolver");
+
+    if action_type.is_none() || resolver.is_none() {
+        return Option::None;
+    }
+
+    Option::Some((json::encode(action_type.unwrap()).unwrap(), json::encode(resolver.unwrap()).unwrap()))
 }

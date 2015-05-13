@@ -1,9 +1,12 @@
 use ai;
+use phys::action::Action;
 use phys::entity::Entity;
 use phys::entity::EntityManager;
+use user::User;
 
 pub struct Area {
     manager: EntityManager,
+    user: User,
     tick: i64
 }
 
@@ -15,7 +18,7 @@ pub struct Tile {
 
 impl Area {
 
-    pub fn new () -> Area {
+    pub fn new (user: User) -> Area {
 
         let mut manager = EntityManager::new();
 
@@ -23,7 +26,7 @@ impl Area {
         Entity::new(&mut manager, "Entity 2".to_string(), Tile {x: 10, y: 10});
         Entity::new(&mut manager, "Entity 3".to_string(), Tile {x: 100, y: 100});
 
-        let area = Area {manager: manager, tick: 0};
+        let area = Area {manager: manager, user: user, tick: 0};
 
         area
     }
@@ -51,7 +54,15 @@ impl Area {
 
     fn tick_entity(&mut self, id: i64) {
 
-        let action = ai::decide(self.manager.get(id));
+        //let action = self.user.get_action(id);
+        //let action = ai::decide(self.manager.get(id));
+
+        let action: Action = if id == 1 { // test
+            self.user.get_action(id)
+        } else {
+            ai::decide(self.manager.get(id))
+        };
+
         let effects = action.resolve(&self.manager);
 
         for effect in effects {
