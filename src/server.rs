@@ -66,7 +66,7 @@ fn serve(mut sender: sender::Sender<WebSocketStream>, mut receiver: receiver::Re
         }
     });
 
-    let user = User::new(action_receiver);
+    let user = User::new(action_receiver, sender);
     let mut area = Area::new(user);
 
     loop {

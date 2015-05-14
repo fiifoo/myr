@@ -18,13 +18,15 @@ pub struct Tile {
 
 impl Area {
 
-    pub fn new (user: User) -> Area {
+    pub fn new (mut user: User) -> Area {
 
         let mut manager = EntityManager::new();
 
         Entity::new(&mut manager, "Entity 1".to_string(), Tile {x: 0, y: 0});
         Entity::new(&mut manager, "Entity 2".to_string(), Tile {x: 10, y: 10});
         Entity::new(&mut manager, "Entity 3".to_string(), Tile {x: 100, y: 100});
+
+        user.send_entities(manager.get_all());
 
         let area = Area {manager: manager, user: user, tick: 0};
 
@@ -39,6 +41,8 @@ impl Area {
             Option::Some(id) => self.tick_entity(id),
             Option::None => self.tick += 1,
         }
+
+        self.user.send_entities(self.manager.get_all());
     }
 
     fn find_tick_entity(&self) -> Option<i64> {
