@@ -4,6 +4,6 @@ version = "0.0.1"
 authors = ["Taavi Lappalainen <taavi.lappalainen@gmail.com>"]
 
 [dependencies]
-rand = "~0.3.8"
-rustc-serialize = "~0.3.14"
-websocket = "~0.11.8"
+rand = "~0.3.12"
+rustc-serialize = "~0.3.16"
+websocket = "~0.14.0"

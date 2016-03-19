@@ -24,15 +24,13 @@ pub enum ActionType {
 impl ActionType {
     pub fn new_from_json(json: String) -> ActionType {
 
-        let json = Json::from_str(json.as_str()).unwrap();
-        let mut decoder = json::Decoder::new(json);
+        let mut decoder = json::Decoder::new(Json::String(json));
 
         ActionType::decode(&mut decoder).unwrap()
     }
     pub fn new_resolver_from_json(&self, json: String) -> Box<ActionResolver> {
 
-        let json = Json::from_str(json.as_str()).unwrap();
-        let mut decoder = json::Decoder::new(json);
+        let mut decoder = json::Decoder::new(Json::String(json));
 
         match *self {
             ActionType::Attack => Box::new(AttackResolver::decode(&mut decoder).unwrap()),

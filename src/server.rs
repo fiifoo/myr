@@ -7,6 +7,7 @@ use rustc_serialize::json::{Json, ToJson};
 
 use websocket::{Server, Message, Sender, Receiver, WebSocketStream};
 use websocket::server::{sender, receiver};
+use websocket::message::Type as MessageType;
 
 use phys::area::Area;
 use user::User;
@@ -42,12 +43,12 @@ fn serve(mut sender: sender::Sender<WebSocketStream>, mut receiver: receiver::Re
     response.insert("message".to_string(), "Welcome!".to_json());
     let response = Json::Object(response);
     let response = json::encode(&response).unwrap();
-    sender.send_message(Message::Text(response)).unwrap();
+    sender.send_message(&Message::text(response)).unwrap();
 
     let (action_sender, action_receiver) = mpsc::channel();
 
     thread::spawn(move || {
-        for message in receiver.incoming_messages::<Message>() {
+        for message in receiver.incoming_messages() {
 
             let message = message.unwrap();
 
@@ -62,7 +63,6 @@ fn serve(mut sender: sender::Sender<WebSocketStream>, mut receiver: receiver::Re
                 let action_sender = action_sender.clone();
                 action_sender.send(action).unwrap();
             }
-
         }
     });
 
@@ -75,23 +75,17 @@ fn serve(mut sender: sender::Sender<WebSocketStream>, mut receiver: receiver::Re
 }
 
 fn extract_action(message: Message) -> Option<(String, String)> {
-
-    match message {
-        Message::Text(string) => extract_json_action(string),
+    match message.opcode {
+        MessageType::Text => extract_json_action(String::from_utf8(message.payload.into_owned()).unwrap()),
         _ => Option::None,
     }
 }
 
 fn extract_json_action(string: String) -> Option<(String, String)> {
 
-    let json = Json::from_str(string.as_str());
-    if json.is_err() {
-        return Option::None;
-    }
-    let json = json.unwrap();
-    let json = json.as_object().unwrap();
+    let json = Json::String(string);
+    let action = json.find("action");
 
-    let action = json.get("action");
     if action.is_none() {
         return Option::None;
     }

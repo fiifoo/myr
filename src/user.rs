@@ -1,8 +1,6 @@
-use std::collections::BTreeMap;
 use std::sync::mpsc;
 
 use rustc_serialize::json;
-use rustc_serialize::json::Json;
 
 use websocket::{Sender, Message, WebSocketStream};
 use websocket::server::sender;
@@ -34,12 +32,14 @@ impl User {
 
     pub fn send_entities(&mut self, entities: &Vec<Entity>) {
 
-        let json = json::encode(entities).unwrap();
-
-        let mut response = BTreeMap::new();
-        response.insert("entities".to_string(), Json::from_str(json.as_str()).unwrap());
-        let response = Json::Object(response);
+        let response = EntityResponse {entities: entities};
         let response = json::encode(&response).unwrap();
-        self.sender.send_message(Message::Text(response)).unwrap();
+
+        self.sender.send_message(&Message::text(response)).unwrap();
     }
+}
+
+#[derive(RustcEncodable)]
+struct EntityResponse<'a> {
+    pub entities: &'a Vec<Entity>,
 }
